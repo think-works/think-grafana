@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+# 自定义的 dockerfile 语法 https://docs.docker.com/build/dockerfile/frontend/
 
 ARG BASE_IMAGE=alpine:3.18.3
 ARG JS_IMAGE=node:18-alpine3.18
@@ -19,6 +20,9 @@ COPY .yarn .yarn
 COPY packages packages
 COPY plugins-bundled plugins-bundled
 
+# 更换 npm 源
+RUN yarn config set npmRegistryServer https://registry.npmmirror.com/
+
 RUN yarn install --immutable
 
 COPY tsconfig.json .eslintrc .editorconfig .browserslistrc .prettierrc.js babel.config.json .linguirc ./
@@ -37,6 +41,9 @@ ARG GO_BUILD_TAGS="oss"
 ARG WIRE_TAGS="oss"
 ARG BINGO="true"
 
+# 更换 alpine 源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
 # Install build dependencies
 RUN if grep -i -q alpine /etc/issue; then \
       apk add --no-cache gcc g++ make git; \
@@ -46,6 +53,10 @@ WORKDIR /tmp/grafana
 
 COPY go.* ./
 COPY .bingo .bingo
+
+# 更换 go 源
+RUN go env -w GO111MODULE=on
+RUN go env -w GOPROXY=https://goproxy.cn,direct
 
 RUN go mod download
 RUN if [[ "$BINGO" = "true" ]]; then \
@@ -104,6 +115,9 @@ ENV PATH="/usr/share/grafana/bin:$PATH" \
 
 WORKDIR $GF_PATHS_HOME
 
+# 更换 alpine 源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
 # Install dependencies
 RUN if grep -i -q alpine /etc/issue; then \
       apk add --no-cache ca-certificates bash curl tzdata musl-utils && \
@@ -118,13 +132,21 @@ RUN if grep -i -q alpine /etc/issue; then \
       echo 'ERROR: Unsupported base image' && /bin/false; \
     fi
 
+# 更换 github.com 和 sgerrand.com 为本地文件
+COPY resources/sgerrand.rsa.pub /etc/apk/keys/sgerrand.rsa.pub
+COPY resources/glibc-2.35-r0.apk /tmp/glibc-2.35-r0.apk
+COPY resources/glibc-bin-2.35-r0.apk /tmp/glibc-bin-2.35-r0.apk
+
+# 更换 alpine 源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
 # glibc support for alpine x86_64 only
 RUN if grep -i -q alpine /etc/issue && [ `arch` = "x86_64" ]; then \
-      wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-      wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk \
-        -O /tmp/glibc-2.35-r0.apk && \
-      wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-bin-2.35-r0.apk \
-        -O /tmp/glibc-bin-2.35-r0.apk && \
+      # wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+      # wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk \
+      #   -O /tmp/glibc-2.35-r0.apk && \
+      # wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-bin-2.35-r0.apk \
+      #   -O /tmp/glibc-bin-2.35-r0.apk && \
       apk add --force-overwrite --no-cache /tmp/glibc-2.35-r0.apk /tmp/glibc-bin-2.35-r0.apk && \
       rm -f /lib64/ld-linux-x86-64.so.2 && \
       ln -s /usr/glibc-compat/lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2 && \
