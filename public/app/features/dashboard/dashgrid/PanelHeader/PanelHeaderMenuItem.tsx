@@ -5,6 +5,8 @@ import { PanelMenuItem, GrafanaTheme2 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { Icon, toIconName, useStyles2 } from '@grafana/ui';
 
+import { isEmbedded } from '../../../../../../think/detection';
+
 interface Props {
   children?: React.ReactNode;
 }
@@ -32,7 +34,7 @@ export const PanelHeaderMenuItem = (props: Props & PanelMenuItem) => {
           {isSubMenu && <Icon name="angle-right" className={styles.shortcutIconClassName} />}
         </span>
 
-        {props.shortcut && (
+        {!isEmbedded() && props.shortcut && (
           <span className="dropdown-menu-item-shortcut">
             <Icon name="keyboard" className={styles.menuIconClassName} /> {props.shortcut}
           </span>

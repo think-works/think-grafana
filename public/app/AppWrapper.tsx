@@ -8,6 +8,8 @@ import { ErrorBoundaryAlert, GlobalStyles, ModalRoot, ModalsProvider, PortalCont
 import { getAppRoutes } from 'app/routes/routes';
 import { store } from 'app/store/store';
 
+import { isEmbedded } from '../../think/detection';
+
 import { AngularRoot } from './angular/AngularRoot';
 import { loadAndInitAngularIfEnabled } from './angular/loadAndInitAngularIfEnabled';
 import { GrafanaApp } from './app';
@@ -101,7 +103,11 @@ export class AppWrapper extends React.Component<AppWrapperProps, AppWrapperState
               <ThemeProvider value={config.theme2}>
                 <KBarProvider
                   actions={[]}
-                  options={{ enableHistory: true, callbacks: { onSelectAction: commandPaletteActionSelected } }}
+                  options={{
+                    enableHistory: true,
+                    toggleShortcut: isEmbedded() ? 'invalid shortcut' : '$mod+k',
+                    callbacks: { onSelectAction: commandPaletteActionSelected },
+                  }}
                 >
                   <ModalsProvider>
                     <GlobalStyles />

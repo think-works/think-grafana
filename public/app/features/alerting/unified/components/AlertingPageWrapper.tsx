@@ -5,6 +5,7 @@ import { Features, ToggleFeatures } from 'react-enable';
 import { NavModelItem } from '@grafana/data';
 import { Page } from 'app/core/components/Page/Page';
 
+import { isEmbedded } from '../../../../../../think/detection';
 import FEATURES from '../features';
 
 interface Props {
@@ -20,6 +21,10 @@ export const AlertingPageWrapper = ({ children, pageId, pageNav, isLoading }: Re
   const [showFeatureToggle, setShowFeatureToggles] = useState(false);
 
   useEffect(() => {
+    if (isEmbedded()) {
+      return;
+    }
+
     combokeys.bind(SHOW_TOGGLES_KEY_COMBO, () => {
       setShowFeatureToggles((show) => !show);
     });

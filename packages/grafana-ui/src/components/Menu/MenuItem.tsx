@@ -3,6 +3,7 @@ import React, { ReactElement, useCallback, useState, useRef, useImperativeHandle
 
 import { GrafanaTheme2, LinkTarget } from '@grafana/data';
 
+import { isEmbedded } from '../../../../../think/detection';
 import { useStyles2 } from '../../themes';
 import { getFocusStyles } from '../../themes/mixins';
 import { IconName } from '../../types';
@@ -138,7 +139,7 @@ export const MenuItem = React.memo(
       localRef?.current?.focus();
     };
 
-    const hasShortcut = Boolean(shortcut && shortcut.length > 0);
+    const hasShortcut = !isEmbedded() && Boolean(shortcut && shortcut.length > 0);
 
     return (
       <ItemElement

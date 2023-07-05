@@ -3,6 +3,8 @@ import React, { useMemo, useState } from 'react';
 
 import { HorizontalGroup, Icon, IconButton, Tooltip, useTheme2 } from '@grafana/ui';
 
+import { isEmbedded } from '../../../../../../../think/detection';
+
 import { QueryValidator, QueryValidatorProps } from './QueryValidator';
 
 interface QueryToolboxProps extends Omit<QueryValidatorProps, 'onValidate'> {
@@ -80,9 +82,11 @@ export function QueryToolbox({ showTools, onFormatCode, onExpand, isExpanded, ..
                 tooltip={isExpanded ? 'Collapse editor' : 'Expand editor'}
               />
             )}
-            <Tooltip content="Hit CTRL/CMD+Return to run query">
-              <Icon className={styles.hint} name="keyboard" />
-            </Tooltip>
+            {isEmbedded() ? null : (
+              <Tooltip content="Hit CTRL/CMD+Return to run query">
+                <Icon className={styles.hint} name="keyboard" />
+              </Tooltip>
+            )}
           </HorizontalGroup>
         </div>
       )}

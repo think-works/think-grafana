@@ -10,6 +10,7 @@ import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashb
 import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { DashboardModel } from 'app/features/dashboard/state';
 
+import { isEmbedded } from '../../../../think/detection';
 import { getTimeSrv } from '../../features/dashboard/services/TimeSrv';
 import { getDatasourceSrv } from '../../features/plugins/datasource_srv';
 import {
@@ -168,6 +169,10 @@ export class KeybindingSrv {
   }
 
   bind(keyArg: string | string[], fn: () => void) {
+    if (isEmbedded()) {
+      return;
+    }
+
     Mousetrap.bind(
       keyArg,
       (evt) => {
@@ -181,6 +186,10 @@ export class KeybindingSrv {
   }
 
   bindGlobal(keyArg: string, fn: () => void) {
+    if (isEmbedded()) {
+      return;
+    }
+
     Mousetrap.bindGlobal(
       keyArg,
       (evt) => {
@@ -194,6 +203,10 @@ export class KeybindingSrv {
   }
 
   unbind(keyArg: string, keyType?: string) {
+    if (isEmbedded()) {
+      return;
+    }
+
     Mousetrap.unbind(keyArg, keyType);
   }
 

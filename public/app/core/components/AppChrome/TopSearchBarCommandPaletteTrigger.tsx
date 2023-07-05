@@ -9,6 +9,8 @@ import { useMediaQueryChange } from 'app/core/hooks/useMediaQueryChange';
 import { t } from 'app/core/internationalization';
 import { getModKey } from 'app/core/utils/browser';
 
+import { isEmbedded } from '../../../../../think/detection';
+
 export function TopSearchBarCommandPaletteTrigger() {
   const theme = useTheme2();
   const { query: kbar } = useKBar((kbarState) => ({
@@ -68,10 +70,12 @@ function PretendTextInput({ onClick }: PretendTextInputProps) {
           {t('nav.search.placeholderCommandPalette', 'Search or jump to...')}
         </button>
 
-        <div className={styles.suffix}>
-          <Icon name="keyboard" />
-          <span className={styles.shortcut}>{modKey}+k</span>
-        </div>
+        {isEmbedded() ? null : (
+          <div className={styles.suffix}>
+            <Icon name="keyboard" />
+            <span className={styles.shortcut}>{modKey}+k</span>
+          </div>
+        )}
       </div>
     </div>
   );
