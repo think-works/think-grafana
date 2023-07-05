@@ -175,9 +175,7 @@ TimeRangePicker.displayName = 'TimeRangePicker';
 
 const ZoomOutTooltip = () => (
   <>
-    <Trans i18nKey="time-picker.range-picker.zoom-out-tooltip">
-      Time range zoom out <br /> CTRL+Z
-    </Trans>
+    <Trans i18nKey="time-picker.range-picker.zoom-out-tooltip">Time range zoom out</Trans>
   </>
 );
 

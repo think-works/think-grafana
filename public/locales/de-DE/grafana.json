@@ -580,7 +580,7 @@
       "forwards-time-aria-label": "Zeitbereich nach vorne verschieben",
       "to": "bis",
       "zoom-out-button": "Zeitbereich verkleinern",
-      "zoom-out-tooltip": "Zeitbereich verkleinern <1></1> STRG +Z"
+      "zoom-out-tooltip": "Zeitbereich verkleinern"
     },
     "time-range": {
       "aria-role": "Zeitbereichauswahl",
