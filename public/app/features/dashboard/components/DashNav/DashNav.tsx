@@ -1,9 +1,10 @@
 import { css } from '@emotion/css';
 import React, { FC, ReactNode, useContext, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { locationUtil, textUtil } from '@grafana/data';
+import { locationUtil, textUtil, GrafanaTheme2 } from '@grafana/data';
 import { selectors as e2eSelectors } from '@grafana/e2e-selectors/src';
 import { locationService } from '@grafana/runtime';
 import {
@@ -16,6 +17,7 @@ import {
   ToolbarButtonRow,
   ModalsContext,
   ConfirmModal,
+  useStyles2,
 } from '@grafana/ui';
 import { AppChromeUpdate } from 'app/core/components/AppChrome/AppChromeUpdate';
 import { NavToolbarSeparator } from 'app/core/components/AppChrome/NavToolbarSeparator';
@@ -35,6 +37,8 @@ import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { KioskMode } from 'app/types';
 import { DashboardMetaChangedEvent, ShowModalReactEvent } from 'app/types/events';
+
+import { isEmbedded } from '../../../../../../think/detection';
 
 import { DashNavButton } from './DashNavButton';
 import { DashNavTimeControls } from './DashNavTimeControls';
@@ -82,6 +86,7 @@ export const DashNav = React.memo<Props>((props) => {
   const forceUpdate = useForceUpdate();
   const { chrome } = useGrafana();
   const { showModal, hideModal } = useContext(ModalsContext);
+  const timeControlsStyles = useStyles2(getTimeControlsStyles);
 
   // We don't really care about the event payload here only that it triggeres a re-render of this component
   useBusEvent(props.dashboard.events, DashboardMetaChangedEvent);
@@ -276,6 +281,16 @@ export const DashNav = React.memo<Props>((props) => {
       return null;
     }
 
+    if (isEmbedded()) {
+      return createPortal(
+        <div className={timeControlsStyles}>
+          <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} reverseOverlay />
+        </div>,
+        document.body,
+        'time-controls'
+      );
+    }
+
     return (
       <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} key="time-controls" />
     );
@@ -423,3 +438,19 @@ const modalStyles = css({
   width: 'max-content',
   maxWidth: '80vw',
 });
+
+const getTimeControlsStyles = (theme: GrafanaTheme2) => css`
+  display: flex;
+  position: fixed;
+  bottom: ${theme.spacing(2)};
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.8;
+  &:hover {
+    opacity: 1;
+  }
+  border: 1px solid ${theme.components.panel.borderColor};
+  border-radius: ${theme.shape.borderRadius(1)};
+  background: ${theme.components.panel.background};
+  box-shadow: ${theme.components.panel.boxShadow};
+`;

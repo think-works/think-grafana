@@ -25,6 +25,7 @@ export interface Props {
   width?: string;
   primary?: boolean;
   isOnCanvas?: boolean;
+  reverseOverlay?: boolean;
 }
 
 export class RefreshPicker extends PureComponent<Props> {
@@ -69,7 +70,8 @@ export class RefreshPicker extends PureComponent<Props> {
   }
 
   render() {
-    const { onRefresh, intervals, tooltip, value, text, isLoading, noIntervalPicker, width } = this.props;
+    const { onRefresh, intervals, tooltip, value, text, isLoading, noIntervalPicker, width, reverseOverlay } =
+      this.props;
 
     const currentValue = value || '';
     const variant = this.getVariant();
@@ -116,6 +118,7 @@ export class RefreshPicker extends PureComponent<Props> {
             title={t('refresh-picker.select-button.auto-refresh', 'Set auto refresh interval')}
             data-testid={selectors.components.RefreshPicker.intervalButtonV2}
             aria-label={ariaLabel}
+            reverseOverlay={reverseOverlay}
           />
         )}
       </ButtonGroup>

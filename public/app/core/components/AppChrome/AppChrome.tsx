@@ -9,6 +9,7 @@ import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { SearchWrapper } from 'app/features/search';
 import { KioskMode } from 'app/types';
 
+import { isEmbedded } from '../../../../../think/detection';
 import { MegaMenu } from '../MegaMenu/MegaMenu';
 import { NavBar } from '../NavBar/NavBar';
 
@@ -43,8 +44,11 @@ export function AppChrome({ children }: Props) {
   const contentClass = cx({
     [styles.content]: true,
     [styles.contentNoSearchBar]: searchBarHidden,
-    [styles.contentChromeless]: state.chromeless,
+    [styles.contentChromeless]: isEmbedded() || state.chromeless,
   });
+
+  // 直接使用 chromeless 模式会造成页面注册的 state.actions 没有被渲染，还是简单点直接隐藏吧。
+  const topNavStyle = isEmbedded() ? { display: 'none' } : undefined;
 
   // Chromeless routes are without topNav, mega menu, search & command palette
   // We check chromeless twice here instead of having a separate path so {children}
@@ -53,7 +57,7 @@ export function AppChrome({ children }: Props) {
   return (
     <main className="main-view">
       {!state.chromeless && (
-        <div className={cx(styles.topNav)}>
+        <div className={cx(styles.topNav)} style={topNavStyle}>
           {!searchBarHidden && <TopSearchBar />}
           <NavToolbar
             searchBarHidden={searchBarHidden}

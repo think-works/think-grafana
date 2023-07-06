@@ -23,6 +23,7 @@ export interface Props<T> extends HTMLAttributes<HTMLButtonElement> {
   tooltipContent?: PopoverContent;
   narrow?: boolean;
   variant?: ToolbarButtonVariant;
+  reverseOverlay?: boolean;
 }
 
 /**
@@ -30,7 +31,7 @@ export interface Props<T> extends HTMLAttributes<HTMLButtonElement> {
  * A temporary component until we have a proper dropdown component
  */
 const ButtonSelectComponent = <T,>(props: Props<T>) => {
-  const { className, options, value, onChange, narrow, variant, ...restProps } = props;
+  const { className, options, value, onChange, narrow, variant, reverseOverlay, ...restProps } = props;
   const styles = useStyles2(getStyles);
   const state = useMenuTriggerState({});
 
@@ -51,13 +52,14 @@ const ButtonSelectComponent = <T,>(props: Props<T>) => {
         narrow={narrow}
         variant={variant}
         ref={ref}
+        reverseAngle={reverseOverlay}
         {...buttonProps}
         {...restProps}
       >
         {value?.label || (value?.value != null ? String(value?.value) : null)}
       </ToolbarButton>
       {state.isOpen && (
-        <div className={styles.menuWrapper}>
+        <div className={reverseOverlay ? styles.reverseMenuWrapper : styles.menuWrapper}>
           <ClickOutsideWrapper onClick={state.close} parent={document} includeButtonPress={false}>
             <FocusScope contain autoFocus restoreFocus>
               {/*
@@ -99,6 +101,12 @@ const getStyles = (theme: GrafanaTheme2) => {
       position: absolute;
       z-index: ${theme.zIndex.dropdown};
       top: ${theme.spacing(4)};
+      right: 0;
+    `,
+    reverseMenuWrapper: css`
+      position: absolute;
+      z-index: ${theme.zIndex.dropdown};
+      bottom: ${theme.spacing(4)};
       right: 0;
     `,
   };

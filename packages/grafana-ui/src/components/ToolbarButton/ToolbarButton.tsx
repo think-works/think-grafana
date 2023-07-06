@@ -34,6 +34,8 @@ type CommonProps = {
   iconOnly?: boolean;
   /** Show highlight dot */
   isHighlighted?: boolean;
+  /** 翻转 isOpen 控制的箭头方向 */
+  reverseAngle?: boolean;
 };
 
 export type ToolbarButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -57,11 +59,13 @@ export const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       iconOnly,
       'aria-label': ariaLabel,
       isHighlighted,
+      reverseAngle,
       ...rest
     },
     ref
   ) => {
     const styles = useStyles2(getStyles);
+    const angleStyle = reverseAngle ? { transform: 'rotate(180deg)' } : undefined;
 
     const buttonStyles = cx(
       {
@@ -90,8 +94,8 @@ export const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
         {renderIcon(icon, iconSize)}
         {imgSrc && <img className={styles.img} src={imgSrc} alt={imgAlt ?? ''} />}
         {children && !iconOnly && <div className={contentStyles}>{children}</div>}
-        {isOpen === false && <Icon name="angle-down" />}
-        {isOpen === true && <Icon name="angle-up" />}
+        {isOpen === false && <Icon name="angle-down" style={angleStyle} />}
+        {isOpen === true && <Icon name="angle-up" style={angleStyle} />}
         {isHighlighted && <div className={styles.highlight} />}
       </button>
     );

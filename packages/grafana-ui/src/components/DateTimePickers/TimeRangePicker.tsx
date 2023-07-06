@@ -44,6 +44,7 @@ export interface TimeRangePickerProps {
   hideQuickRanges?: boolean;
   widthOverride?: number;
   isOnCanvas?: boolean;
+  reverseOverlay?: boolean;
 }
 
 export interface State {
@@ -68,6 +69,7 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
     hideQuickRanges,
     widthOverride,
     isOnCanvas,
+    reverseOverlay,
   } = props;
 
   const onChange = (timeRange: TimeRange) => {
@@ -120,6 +122,7 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
           icon="clock-nine"
           isOpen={isOpen}
           variant={variant}
+          reverseAngle={reverseOverlay}
         >
           <TimePickerButtonLabel {...props} />
         </ToolbarButton>
@@ -128,7 +131,12 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
         <div>
           <div role="presentation" className={cx(modalBackdrop, styles.backdrop)} {...underlayProps} />
           <FocusScope contain autoFocus>
-            <section className={styles.content} ref={ref} {...overlayProps} {...dialogProps}>
+            <section
+              className={reverseOverlay ? styles.reverseContent : styles.content}
+              ref={ref}
+              {...overlayProps}
+              {...dialogProps}
+            >
               <TimePickerContent
                 timeZone={timeZone}
                 fiscalYearStartMonth={fiscalYearStartMonth}
@@ -246,6 +254,20 @@ const getStyles = (theme: GrafanaTheme2) => {
         position: 'fixed',
         right: '50%',
         top: '50%',
+        transform: 'translate(50%, -50%)',
+        zIndex: theme.zIndex.modal,
+      },
+    }),
+    reverseContent: css({
+      position: 'absolute',
+      right: 0,
+      bottom: '116%',
+      zIndex: theme.zIndex.dropdown,
+
+      [theme.breakpoints.down('sm')]: {
+        position: 'fixed',
+        right: '50%',
+        bottom: '50%',
         transform: 'translate(50%, -50%)',
         zIndex: theme.zIndex.modal,
       },
