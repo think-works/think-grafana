@@ -3,6 +3,7 @@ import React, { ReactElement, useCallback } from 'react';
 
 import { selectors } from '@grafana/e2e-selectors';
 
+import { isEmbedded } from '../../../../../think/detection';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { ToolbarButton } from '../ToolbarButton';
 import { TooltipPlacement } from '../Tooltip';
@@ -39,6 +40,10 @@ export function PanelMenu({
     },
     [onOpenMenu, onVisibleChange]
   );
+
+  if (isEmbedded()) {
+    return null;
+  }
 
   return (
     <Dropdown overlay={menu} placement={placement} offset={offset} onVisibleChange={handleVisibility}>
