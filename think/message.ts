@@ -116,8 +116,10 @@ export class ThinkGrafanaMessage {
   private emit = (type: string, ...arg: Parameters<EventHandler>) => {
     const list = this.events[type];
 
-    (list || []).map((handler) => {
-      typeof handler === "function" && handler(...arg);
+    (list || []).forEach((handler) => {
+      if (typeof handler === "function") {
+        handler(...arg);
+      }
     });
   };
 
@@ -185,7 +187,7 @@ export class ThinkGrafanaMessage {
 
     const clear = () => {
       clearTimeout(timer);
-      this.off("pong", pong);
+      this.off("pong", pong); // eslint-disable-line @typescript-eslint/no-use-before-define
     };
 
     const pong = (echoMsg: any) => {
@@ -194,14 +196,18 @@ export class ThinkGrafanaMessage {
       }
 
       clear();
-      readyCb && readyCb(true);
+      if (typeof readyCb === "function") {
+        readyCb(true);
+      }
     };
 
     const ping = () => {
       // 下一次重试时再清理
       if (count++ > retryCount) {
         clear();
-        readyCb && readyCb(false);
+        if (typeof readyCb === "function") {
+          readyCb(false);
+        }
         return;
       }
 
