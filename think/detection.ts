@@ -1,16 +1,13 @@
-export type ThinkConfig = {
-  embedded?: boolean;
-  editable?: boolean;
-};
-
-const THINK_SEARCH_KEY = 'think-config';
+import { ThinkConfig, THINK_SEARCH_KEY } from "./message";
 
 // 单例缓存一下
 let prevSearch: string | null;
 let prevParams: string | null;
 let prevConfig: ThinkConfig;
 
-// 实时读取配置
+/**
+ * 实时读取配置
+ */
 const getThinkConfig = () => {
   if (prevSearch === location.search) {
     return prevConfig;
@@ -49,9 +46,9 @@ export const isEmbedded = () => {
 };
 
 /**
- * 允许编辑部分内容
+ * 隐藏时间控制器
  */
-export const isEditable = () => {
+export const isHideTime = () => {
   const config = getThinkConfig();
-  return !!config?.editable;
+  return !!config?.hideTime;
 };

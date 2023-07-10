@@ -9,6 +9,7 @@ import { appEvents } from 'app/core/core';
 import { t } from 'app/core/internationalization';
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 
+import { THINK_APP_ID, ThinkGrafanaMessage } from '../../../../../../think/message';
 import { ShiftTimeEvent, ShiftTimeEventDirection, ZoomOutEvent } from '../../../../types/events';
 import { DashboardModel } from '../../state';
 
@@ -21,14 +22,36 @@ export interface Props {
 
 export class DashNavTimeControls extends Component<Props> {
   private sub?: Unsubscribable;
+  private message?: ThinkGrafanaMessage;
 
   componentDidMount() {
     this.sub = this.props.dashboard.events.subscribe(TimeRangeUpdatedEvent, () => this.forceUpdate());
+    this.initMessage();
   }
 
   componentWillUnmount() {
     this.sub?.unsubscribe();
+    this.destroyMessage();
   }
+
+  initMessage = () => {
+    this.message = new ThinkGrafanaMessage({
+      targetId: THINK_APP_ID,
+    });
+    this.message.on("time-range-picker", (timeRange: TimeRange) => {
+      this.onChangeTimePicker(timeRange);
+    });
+    this.message.on("time-refresh", () => {
+      this.onRefresh();
+    });
+    this.message.on("time-refresh-interval", (interval: string) => {
+      this.onChangeRefreshInterval(interval);
+    });
+  };
+
+  destroyMessage = () => {
+    this.message?.destroy();
+  };
 
   onChangeRefreshInterval = (interval: string) => {
     getTimeSrv().setAutoRefresh(interval);

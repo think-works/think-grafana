@@ -38,7 +38,7 @@ import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { KioskMode } from 'app/types';
 import { DashboardMetaChangedEvent, ShowModalReactEvent } from 'app/types/events';
 
-import { isEmbedded } from '../../../../../../think/detection';
+import { isEmbedded, isHideTime } from '../../../../../../think/detection';
 
 import { DashNavButton } from './DashNavButton';
 import { DashNavTimeControls } from './DashNavTimeControls';
@@ -282,6 +282,10 @@ export const DashNav = React.memo<Props>((props) => {
     }
 
     if (isEmbedded()) {
+      if (isHideTime()) {
+        return null;
+      }
+
       return createPortal(
         <div className={timeControlsStyles}>
           <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} reverseOverlay />
