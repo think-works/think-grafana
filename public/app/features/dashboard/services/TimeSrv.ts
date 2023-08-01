@@ -17,6 +17,7 @@ import { contextSrv, ContextSrv } from 'app/core/services/context_srv';
 import { getShiftedTimeRange, getZoomedTimeRange } from 'app/core/utils/timePicker';
 import { getTimeRange } from 'app/features/dashboard/utils/timeRange';
 
+import { getMessage } from '../../../../../think/detection';
 import { AbsoluteTimeEvent, ShiftTimeEvent, ShiftTimeEventDirection, ZoomOutEvent } from '../../../types/events';
 import { TimeModel } from '../state/TimeModel';
 import { getRefreshFromUrl } from '../utils/getRefreshFromUrl';
@@ -219,6 +220,10 @@ export class TimeSrv {
       this.timeModel.refresh = interval;
     }
 
+    // #region Message
+    getMessage().sendMessage('event:TimeSrv:refreshInterval', interval);
+    // #endregion
+
     this.stopAutoRefresh();
 
     const currentUrlState = locationService.getSearchObject();
@@ -249,6 +254,10 @@ export class TimeSrv {
 
   refreshTimeModel() {
     this.timeModel?.timeRangeUpdated(this.timeRange());
+
+    // #region Message
+    getMessage().sendMessage('event:TimeSrv:refresh');
+    // #endregion
   }
 
   private startNextRefreshTimer(afterMs: number) {
@@ -289,6 +298,18 @@ export class TimeSrv {
       this.setAutoRefresh(this.oldRefresh);
       this.oldRefresh = null;
     }
+
+    // #region Message
+    const { from, to, raw } = this.timeRange() || {};
+    getMessage().sendMessage('event:TimeSrv:rangePicker', {
+      from: from?.valueOf(),
+      to: to?.valueOf(),
+      raw: raw && {
+        from: raw?.from?.valueOf(),
+        to: raw?.to?.valueOf(),
+      },
+    });
+    // #endregion
 
     if (updateUrl === true) {
       const urlRange = this.timeRangeForUrl();

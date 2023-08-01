@@ -36,33 +36,33 @@ export class DashNavTimeControls extends Component<Props> {
   // #region Message
 
   onMessage = () => {
-    getMessage().on('trigger:time-refresh', this.triggerTimeRefresh);
-    getMessage().on('trigger:time-refresh-interval', this.triggerTimeRefreshInterval);
-    getMessage().on('trigger:time-range-picker', this.triggerTimeRangePicker);
+    getMessage().on('trigger:TimeControls:refresh', this.triggerRefresh);
+    getMessage().on('trigger:TimeControls:refreshInterval', this.triggerRefreshInterval);
+    getMessage().on('trigger:TimeControls:rangePicker', this.triggerRangePicker);
   };
 
   offMessage = () => {
-    getMessage().off('trigger:time-refresh', this.triggerTimeRefresh);
-    getMessage().off('trigger:time-refresh-interval', this.triggerTimeRefreshInterval);
-    getMessage().off('trigger:time-range-picker', this.triggerTimeRangePicker);
+    getMessage().off('trigger:TimeControls:refresh', this.triggerRefresh);
+    getMessage().off('trigger:TimeControls:refreshInterval', this.triggerRefreshInterval);
+    getMessage().off('trigger:TimeControls:rangePicker', this.triggerRangePicker);
   };
 
-  triggerTimeRefresh = () => {
+  triggerRefresh = () => {
     this.onRefresh(null, true);
   };
 
-  triggerTimeRefreshInterval = (interval: string) => {
+  triggerRefreshInterval = (interval: string) => {
     this.onChangeRefreshInterval(interval, true);
   };
 
-  triggerTimeRangePicker = (timeRange: TimeRange) => {
-    const { from, to } = timeRange || {};
+  triggerRangePicker = (timeRange: TimeRange) => {
+    const { from, to, raw } = timeRange || {};
     const nextRange: TimeRange = {
       from: typeof from === 'number' ? dateMath.parse(new Date(from))! : from,
       to: typeof to === 'number' ? dateMath.parse(new Date(to))! : to,
       raw: {
-        from,
-        to,
+        from: raw?.from || from,
+        to: raw?.to || to,
       },
     };
     this.onChangeTimePicker(nextRange, true);
@@ -74,17 +74,21 @@ export class DashNavTimeControls extends Component<Props> {
     getTimeSrv().setAutoRefresh(interval);
     this.forceUpdate();
 
+    // #region Message
     if (!ignoreMessage) {
-      getMessage().sendMessage('event:time-refresh-interval', interval);
+      getMessage().sendMessage('event:TimeControls:refreshInterval', interval);
     }
+    // #endregion
   };
 
   onRefresh = (e?: unknown, ignoreMessage = false) => {
     getTimeSrv().refreshTimeModel();
 
+    // #region Message
     if (!ignoreMessage) {
-      getMessage().sendMessage('event:time-refresh', null);
+      getMessage().sendMessage('event:TimeControls:refresh');
     }
+    // #endregion
 
     return Promise.resolve();
   };
@@ -111,13 +115,15 @@ export class DashNavTimeControls extends Component<Props> {
 
     getTimeSrv().setTime(nextRange);
 
+    // #region Message
     if (!ignoreMessage) {
-      const { from, to } = nextRange || {};
-      getMessage().sendMessage('event:time-range-picker', {
+      const { from, to } = nextRange;
+      getMessage().sendMessage('event:TimeControls:rangePicker', {
         from: from?.valueOf(),
         to: to?.valueOf(),
       });
     }
+    // #endregion
   };
 
   onChangeTimeZone = (timeZone: TimeZone) => {
