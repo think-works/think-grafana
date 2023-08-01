@@ -1,6 +1,6 @@
-import { ThinkConfig, THINK_SEARCH_KEY } from "./message";
+import { ThinkConfig, THINK_SEARCH_KEY, THINK_APP_ID, ThinkGrafanaMessage } from './message';
 
-// 单例缓存一下
+// 三层配置缓存
 let prevSearch: string | null;
 let prevParams: string | null;
 let prevConfig: ThinkConfig;
@@ -51,4 +51,20 @@ export const isEmbedded = () => {
 export const isHideTime = () => {
   const config = getThinkConfig();
   return !!config?.hideTime;
+};
+
+// 单例 Message
+let message: ThinkGrafanaMessage;
+
+/**
+ * 获取单例 Message
+ */
+export const getMessage = () => {
+  if (!message) {
+    message = new ThinkGrafanaMessage({
+      targetId: THINK_APP_ID,
+    });
+  }
+
+  return message;
 };

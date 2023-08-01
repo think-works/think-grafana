@@ -9,7 +9,7 @@ import { appEvents } from 'app/core/core';
 import { t } from 'app/core/internationalization';
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 
-import { THINK_APP_ID, ThinkGrafanaMessage } from '../../../../../../think/message';
+import { getMessage } from '../../../../../../think/detection';
 import { ShiftTimeEvent, ShiftTimeEventDirection, ZoomOutEvent } from '../../../../types/events';
 import { DashboardModel } from '../../state';
 
@@ -22,52 +22,60 @@ export interface Props {
 
 export class DashNavTimeControls extends Component<Props> {
   private sub?: Unsubscribable;
-  private message?: ThinkGrafanaMessage;
 
   componentDidMount() {
     this.sub = this.props.dashboard.events.subscribe(TimeRangeUpdatedEvent, () => this.forceUpdate());
-    this.initMessage();
+    this.onMessage();
   }
 
   componentWillUnmount() {
     this.sub?.unsubscribe();
-    this.destroyMessage();
+    this.offMessage();
   }
 
-  initMessage = () => {
-    this.message = new ThinkGrafanaMessage({
-      targetId: THINK_APP_ID,
-    });
-    this.message.on('trigger:time-refresh', () => {
-      this.onRefresh(null, true);
-    });
-    this.message.on('trigger:time-refresh-interval', (interval: string) => {
-      this.onChangeRefreshInterval(interval, true);
-    });
-    this.message.on('trigger:time-range-picker', (timeRange: TimeRange) => {
-      const { from, to } = timeRange || {};
-      const nextRange: TimeRange = {
-        from: typeof from === 'number' ? dateMath.parse(new Date(from))! : from,
-        to: typeof to === 'number' ? dateMath.parse(new Date(to))! : to,
-        raw: {
-          from,
-          to,
-        },
-      };
-      this.onChangeTimePicker(nextRange, true);
-    });
+  // #region Message
+
+  onMessage = () => {
+    getMessage().on('trigger:time-refresh', this.triggerTimeRefresh);
+    getMessage().on('trigger:time-refresh-interval', this.triggerTimeRefreshInterval);
+    getMessage().on('trigger:time-range-picker', this.triggerTimeRangePicker);
   };
 
-  destroyMessage = () => {
-    this.message?.destroy();
+  offMessage = () => {
+    getMessage().off('trigger:time-refresh', this.triggerTimeRefresh);
+    getMessage().off('trigger:time-refresh-interval', this.triggerTimeRefreshInterval);
+    getMessage().off('trigger:time-range-picker', this.triggerTimeRangePicker);
   };
+
+  triggerTimeRefresh = () => {
+    this.onRefresh(null, true);
+  };
+
+  triggerTimeRefreshInterval = (interval: string) => {
+    this.onChangeRefreshInterval(interval, true);
+  };
+
+  triggerTimeRangePicker = (timeRange: TimeRange) => {
+    const { from, to } = timeRange || {};
+    const nextRange: TimeRange = {
+      from: typeof from === 'number' ? dateMath.parse(new Date(from))! : from,
+      to: typeof to === 'number' ? dateMath.parse(new Date(to))! : to,
+      raw: {
+        from,
+        to,
+      },
+    };
+    this.onChangeTimePicker(nextRange, true);
+  };
+
+  // #endregion
 
   onChangeRefreshInterval = (interval: string, ignoreMessage = false) => {
     getTimeSrv().setAutoRefresh(interval);
     this.forceUpdate();
 
     if (!ignoreMessage) {
-      this.message?.sendMessage('event:time-refresh-interval', interval);
+      getMessage().sendMessage('event:time-refresh-interval', interval);
     }
   };
 
@@ -75,7 +83,7 @@ export class DashNavTimeControls extends Component<Props> {
     getTimeSrv().refreshTimeModel();
 
     if (!ignoreMessage) {
-      this.message?.sendMessage('event:time-refresh', null);
+      getMessage().sendMessage('event:time-refresh', null);
     }
 
     return Promise.resolve();
@@ -103,9 +111,9 @@ export class DashNavTimeControls extends Component<Props> {
 
     getTimeSrv().setTime(nextRange);
 
-    const { from, to } = nextRange || {};
     if (!ignoreMessage) {
-      this.message?.sendMessage('event:time-range-picker', {
+      const { from, to } = nextRange || {};
+      getMessage().sendMessage('event:time-range-picker', {
         from: from?.valueOf(),
         to: to?.valueOf(),
       });
