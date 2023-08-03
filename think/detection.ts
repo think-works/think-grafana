@@ -1,4 +1,9 @@
-import { ThinkConfig, THINK_SEARCH_KEY, THINK_APP_ID, ThinkGrafanaMessage } from './message';
+import {
+  THINK_APP_ID,
+  THINK_SEARCH_KEY,
+  ThinkConfig,
+  ThinkGrafanaMessage,
+} from "./message";
 
 // 三层配置缓存
 let prevSearch: string | null;
@@ -32,7 +37,10 @@ const getThinkConfig = () => {
 
       return config;
     } catch (error) {
-      console.error(`[think-grafana] invalid "${THINK_SEARCH_KEY}" params: ${params}`, error);
+      console.error(
+        `[think-grafana] invalid "${THINK_SEARCH_KEY}" params: ${params}`,
+        error,
+      );
     }
   }
 };

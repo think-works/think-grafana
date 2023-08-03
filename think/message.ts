@@ -1,10 +1,3 @@
-/**
- * 注意：
- * 本文件需要在主应用和 Granafa 之间保持同步
- */
-
-// #region 托管其他属性以便跨应用重用
-
 export type ThinkConfig = {
   /** 被 iframe 内嵌 */
   embedded?: boolean;
@@ -14,8 +7,6 @@ export type ThinkConfig = {
 
 /** 约定的主应用配置 key */
 export const THINK_SEARCH_KEY = "think-config";
-
-// #endregion
 
 export type EventHandler = (message?: any, ...args: any) => any;
 
@@ -179,7 +170,7 @@ export class ThinkGrafanaMessage {
       retryInterval = 200,
       /** 重试次数 */
       retryCount = 0,
-    } = {}
+    } = {},
   ) => {
     let timer: any;
     let count = 0;
