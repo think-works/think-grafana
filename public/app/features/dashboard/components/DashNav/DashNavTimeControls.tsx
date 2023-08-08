@@ -9,7 +9,7 @@ import { appEvents } from 'app/core/core';
 import { t } from 'app/core/internationalization';
 import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 
-import { getMessage } from '../../../../../../think/detection';
+import { getMessage } from '../../../../../../think/packages/detection';
 import { ShiftTimeEvent, ShiftTimeEventDirection, ZoomOutEvent } from '../../../../types/events';
 import { DashboardModel } from '../../state';
 

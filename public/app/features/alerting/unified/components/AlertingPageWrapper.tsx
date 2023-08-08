@@ -5,7 +5,7 @@ import { Features, ToggleFeatures } from 'react-enable';
 import { NavModelItem } from '@grafana/data';
 import { Page } from 'app/core/components/Page/Page';
 
-import { isEmbedded } from '../../../../../../think/detection';
+import { isEmbedded } from '../../../../../../think/packages/detection';
 import FEATURES from '../features';
 
 interface Props {

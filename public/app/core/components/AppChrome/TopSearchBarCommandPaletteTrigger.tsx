@@ -9,7 +9,7 @@ import { useMediaQueryChange } from 'app/core/hooks/useMediaQueryChange';
 import { t } from 'app/core/internationalization';
 import { getModKey } from 'app/core/utils/browser';
 
-import { isEmbedded } from '../../../../../think/detection';
+import { isEmbedded } from '../../../../../think/packages/detection';
 
 export function TopSearchBarCommandPaletteTrigger() {
   const theme = useTheme2();

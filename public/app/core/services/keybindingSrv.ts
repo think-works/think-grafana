@@ -10,7 +10,7 @@ import { SaveDashboardDrawer } from 'app/features/dashboard/components/SaveDashb
 import { ShareModal } from 'app/features/dashboard/components/ShareModal';
 import { DashboardModel } from 'app/features/dashboard/state';
 
-import { isEmbedded } from '../../../../think/detection';
+import { isEmbedded } from '../../../../think/packages/detection';
 import { getTimeSrv } from '../../features/dashboard/services/TimeSrv';
 import { getDatasourceSrv } from '../../features/plugins/datasource_srv';
 import {

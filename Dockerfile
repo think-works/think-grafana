@@ -30,8 +30,8 @@ COPY public public
 COPY scripts scripts
 COPY emails emails
 
-# 复制 think 目录
-COPY think think
+# 复制 think/packages 目录
+COPY think/packages think/packages
 
 ENV NODE_ENV production
 RUN yarn build

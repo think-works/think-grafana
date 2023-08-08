@@ -8,7 +8,7 @@ import { ErrorBoundaryAlert, GlobalStyles, ModalRoot, ModalsProvider, PortalCont
 import { getAppRoutes } from 'app/routes/routes';
 import { store } from 'app/store/store';
 
-import { isEmbedded } from '../../think/detection';
+import { isEmbedded } from '../../think/packages/detection';
 
 import { AngularRoot } from './angular/AngularRoot';
 import { loadAndInitAngularIfEnabled } from './angular/loadAndInitAngularIfEnabled';

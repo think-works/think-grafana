@@ -5,7 +5,7 @@ import { PanelMenuItem, GrafanaTheme2 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { Icon, toIconName, useStyles2 } from '@grafana/ui';
 
-import { isEmbedded } from '../../../../../../think/detection';
+import { isEmbedded } from '../../../../../../think/packages/detection';
 
 interface Props {
   children?: React.ReactNode;

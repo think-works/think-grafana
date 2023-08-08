@@ -3,7 +3,7 @@ import React, { ReactElement, useCallback, useState, useRef, useImperativeHandle
 
 import { GrafanaTheme2, LinkTarget } from '@grafana/data';
 
-import { isEmbedded } from '../../../../../think/detection';
+import { isEmbedded } from '../../../../../think/packages/detection';
 import { useStyles2 } from '../../themes';
 import { getFocusStyles } from '../../themes/mixins';
 import { IconName } from '../../types';

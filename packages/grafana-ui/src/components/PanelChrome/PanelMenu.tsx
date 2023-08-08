@@ -3,7 +3,7 @@ import React, { ReactElement, useCallback } from 'react';
 
 import { selectors } from '@grafana/e2e-selectors';
 
-import { isEmbedded } from '../../../../../think/detection';
+import { isEmbedded } from '../../../../../think/packages/detection';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { ToolbarButton } from '../ToolbarButton';
 import { TooltipPlacement } from '../Tooltip';

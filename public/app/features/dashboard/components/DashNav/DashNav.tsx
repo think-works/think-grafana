@@ -38,7 +38,7 @@ import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
 import { KioskMode } from 'app/types';
 import { DashboardMetaChangedEvent, ShowModalReactEvent } from 'app/types/events';
 
-import { isEmbedded, isHideTime } from '../../../../../../think/detection';
+import { isEmbedded, isHideTime } from '../../../../../../think/packages/detection';
 
 import { DashNavButton } from './DashNavButton';
 import { DashNavTimeControls } from './DashNavTimeControls';

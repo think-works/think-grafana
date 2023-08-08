@@ -9,7 +9,7 @@ import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { SearchWrapper } from 'app/features/search';
 import { KioskMode } from 'app/types';
 
-import { isEmbedded } from '../../../../../think/detection';
+import { isEmbedded } from '../../../../../think/packages/detection';
 import { MegaMenu } from '../MegaMenu/MegaMenu';
 import { NavBar } from '../NavBar/NavBar';
 

@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import { HorizontalGroup, Icon, IconButton, Tooltip, useTheme2 } from '@grafana/ui';
 
-import { isEmbedded } from '../../../../../../../think/detection';
+import { isEmbedded } from '../../../../../../../think/packages/detection';
 
 import { QueryValidator, QueryValidatorProps } from './QueryValidator';
 
