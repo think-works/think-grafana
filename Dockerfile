@@ -136,9 +136,9 @@ RUN if grep -i -q alpine /etc/issue; then \
     fi
 
 # 更换 github.com 和 sgerrand.com 为本地文件
-COPY resources/sgerrand.rsa.pub /etc/apk/keys/sgerrand.rsa.pub
-COPY resources/glibc-2.35-r0.apk /tmp/glibc-2.35-r0.apk
-COPY resources/glibc-bin-2.35-r0.apk /tmp/glibc-bin-2.35-r0.apk
+COPY think/resources/sgerrand.rsa.pub /etc/apk/keys/sgerrand.rsa.pub
+COPY think/resources/glibc-2.35-r0.apk /tmp/glibc-2.35-r0.apk
+COPY think/resources/glibc-bin-2.35-r0.apk /tmp/glibc-bin-2.35-r0.apk
 
 # 更换 alpine 源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
