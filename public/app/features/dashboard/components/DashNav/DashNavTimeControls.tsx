@@ -39,12 +39,14 @@ export class DashNavTimeControls extends Component<Props> {
     getMessage().on('trigger:TimeControls:refresh', this.triggerRefresh);
     getMessage().on('trigger:TimeControls:refreshInterval', this.triggerRefreshInterval);
     getMessage().on('trigger:TimeControls:rangePicker', this.triggerRangePicker);
+    getMessage().sendMessage('online:TimeControls');
   };
 
   offMessage = () => {
     getMessage().off('trigger:TimeControls:refresh', this.triggerRefresh);
     getMessage().off('trigger:TimeControls:refreshInterval', this.triggerRefreshInterval);
     getMessage().off('trigger:TimeControls:rangePicker', this.triggerRangePicker);
+    getMessage().sendMessage('offline:TimeControls');
   };
 
   triggerRefresh = () => {
