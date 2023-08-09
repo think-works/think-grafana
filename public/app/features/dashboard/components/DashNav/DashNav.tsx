@@ -282,12 +282,17 @@ export const DashNav = React.memo<Props>((props) => {
     }
 
     if (isEmbedded()) {
-      if (isHideTime()) {
-        return null;
-      }
-
       return createPortal(
-        <div className={timeControlsStyles}>
+        <div
+          className={timeControlsStyles}
+          style={
+            isHideTime()
+              ? {
+                  display: 'none',
+                }
+              : {}
+          }
+        >
           <DashNavTimeControls dashboard={dashboard} onChangeTimeZone={updateTimeZoneForSession} reverseOverlay />
         </div>,
         document.body,
