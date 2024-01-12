@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -37,6 +38,9 @@ import (
 	"github.com/grafana/grafana/pkg/util"
 	"github.com/grafana/grafana/pkg/web"
 )
+
+//go:embed test-data/*.*
+var testData embed.FS
 
 func TestProvisioningApi(t *testing.T) {
 	t.Run("policies", func(t *testing.T) {
