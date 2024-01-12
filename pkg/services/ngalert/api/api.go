@@ -106,14 +106,15 @@ func (api *API) RegisterAPIEndpoints(m *metrics.API) {
 		api.DatasourceCache,
 		NewLotexRuler(proxy, logger),
 		&RulerSrv{
-			conditionValidator: api.EvaluatorFactory,
-			QuotaService:       api.QuotaService,
-			store:              api.RuleStore,
-			provenanceStore:    api.ProvenanceStore,
-			xactManager:        api.TransactionManager,
-			log:                logger,
-			cfg:                &api.Cfg.UnifiedAlerting,
-			authz:              ruleAuthzService,
+			conditionValidator:      api.EvaluatorFactory,
+			QuotaService:            api.QuotaService,
+			store:                   api.RuleStore,
+			provenanceStore:         api.ProvenanceStore,
+			xactManager:             api.TransactionManager,
+			log:                     logger,
+			cfg:                     &api.Cfg.UnifiedAlerting,
+			authz:                   ruleAuthzService,
+			dashboardUpgradeService: api.UpgradeService,
 		},
 	), m)
 	api.RegisterTestingApiEndpoints(NewTestingApi(

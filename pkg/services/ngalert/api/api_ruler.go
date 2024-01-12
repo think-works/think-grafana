@@ -13,6 +13,7 @@ import (
 	"github.com/grafana/grafana/pkg/api/apierrors"
 	"github.com/grafana/grafana/pkg/api/response"
 	"github.com/grafana/grafana/pkg/infra/log"
+	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/auth/identity"
 	contextmodel "github.com/grafana/grafana/pkg/services/contexthandler/model"
 	"github.com/grafana/grafana/pkg/services/dashboards"
@@ -33,15 +34,20 @@ type ConditionValidator interface {
 	Validate(ctx eval.EvaluationContext, condition ngmodels.Condition) error
 }
 
+type DashboardUpgradeService interface {
+	ExtractDashboardAlerts(ctx context.Context, dashInfo alerting.DashAlertInfo) ([]*ngmodels.AlertRuleGroup, error)
+}
+
 type RulerSrv struct {
-	xactManager        provisioning.TransactionManager
-	provenanceStore    provisioning.ProvisioningStore
-	store              RuleStore
-	QuotaService       quota.Service
-	log                log.Logger
-	cfg                *setting.UnifiedAlertingSettings
-	conditionValidator ConditionValidator
-	authz              RuleAccessControlService
+	xactManager             provisioning.TransactionManager
+	provenanceStore         provisioning.ProvisioningStore
+	store                   RuleStore
+	QuotaService            quota.Service
+	log                     log.Logger
+	cfg                     *setting.UnifiedAlertingSettings
+	conditionValidator      ConditionValidator
+	authz                   RuleAccessControlService
+	dashboardUpgradeService DashboardUpgradeService
 }
 
 var (
