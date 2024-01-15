@@ -162,7 +162,7 @@ func TestIntegrationPostgresSnapshots(t *testing.T) {
 
 			cnnstr := getCnnStr()
 
-			db, handler, err := newPostgres(cfg, dsInfo, cnnstr, logger)
+			db, handler, err := newPostgres(context.Background(), cfg, dsInfo, cnnstr, logger)
 
 			t.Cleanup((func() {
 				_, err := db.Exec("DROP TABLE tbl")
