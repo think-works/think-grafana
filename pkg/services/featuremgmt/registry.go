@@ -1345,5 +1345,13 @@ var (
 			Owner:        grafanaObservabilityTracesAndProfilingSquad,
 			Created:      time.Date(2024, time.January, 2, 12, 0, 0, 0, time.UTC),
 		},
+		{
+			Name:            "kubernetesAggregator",
+			Description:     "Enable kube-aggregator",
+			Stage:           FeatureStageExperimental,
+			Owner:           grafanaAppPlatformSquad,
+			RequiresRestart: true,
+			Created:         time.Date(2024, time.February, 1, 12, 0, 0, 0, time.UTC),
+		},
 	}
 )

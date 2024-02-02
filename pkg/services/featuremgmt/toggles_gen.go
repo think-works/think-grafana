@@ -642,4 +642,8 @@ const (
 	// FlagNodeGraphDotLayout
 	// Changed the layout algorithm for the node graph
 	FlagNodeGraphDotLayout = "nodeGraphDotLayout"
+
+	// FlagKubernetesAggregator
+	// Enable kube-aggregator
+	FlagKubernetesAggregator = "kubernetesAggregator"
 )

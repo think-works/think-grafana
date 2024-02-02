@@ -201,8 +201,10 @@ func (s *service) start(ctx context.Context) error {
 			return err
 		}
 
-		// set the priority for the group+version
-		aggregator.APIVersionPriorities[b.GetGroupVersion()] = aggregator.Priority{Group: 15000, Version: int32(i + 1)}
+		if s.features.IsEnabledGlobally(featuremgmt.FlagKubernetesAggregator) {
+			// set the priority for the group+version
+			aggregator.APIVersionPriorities[b.GetGroupVersion()] = aggregator.Priority{Group: 15000, Version: int32(i + 1)}
+		}
 
 		auth := b.GetAuthorizer()
 		if auth != nil {
@@ -284,11 +286,6 @@ func (s *service) start(ctx context.Context) error {
 		return err
 	}
 
-	aggregatorConfig, aggregatorInformers, err := aggregator.CreateAggregatorConfig(o, *serverConfig)
-	if err != nil {
-		return err
-	}
-
 	// support folder selection
 	err = entitystorage.RegisterFieldSelectorSupport(Scheme)
 	if err != nil {
@@ -312,9 +309,73 @@ func (s *service) start(ctx context.Context) error {
 		return err
 	}
 
+	// stash the options for later use
+	s.options = o
+
+	var runningServer *genericapiserver.GenericAPIServer
+	if s.features.IsEnabledGlobally(featuremgmt.FlagKubernetesAggregator) {
+		runningServer, err = s.startAggregator(transport, serverConfig, server)
+		if err != nil {
+			return err
+		}
+	} else {
+		runningServer, err = s.startCoreServer(transport, serverConfig, server)
+		if err != nil {
+			return err
+		}
+	}
+
+	// only write kubeconfig in dev mode
+	if o.ExtraOptions.DevMode {
+		if err := ensureKubeConfig(runningServer.LoopbackClientConfig, o.StorageOptions.DataPath); err != nil {
+			return err
+		}
+	}
+
+	// used by the proxy wrapper registered in ProvideService
+	s.handler = runningServer.Handler
+	// used by local clients to make requests to the server
+	s.restConfig = runningServer.LoopbackClientConfig
+
+	return nil
+}
+
+func (s *service) startCoreServer(
+	transport *roundTripperFunc,
+	serverConfig *genericapiserver.RecommendedConfig,
+	server *genericapiserver.GenericAPIServer,
+) (*genericapiserver.GenericAPIServer, error) {
+	// setup the loopback transport and signal that it's ready
+	transport.fn = func(req *http.Request) (*http.Response, error) {
+		w := newWrappedResponseWriter()
+		resp := responsewriter.WrapForHTTP1Or2(w)
+		server.Handler.ServeHTTP(resp, req)
+		return w.Result(), nil
+	}
+	close(transport.ready)
+
+	prepared := server.PrepareRun()
+
+	go func() {
+		s.stoppedCh <- prepared.Run(s.stopCh)
+	}()
+
+	return server, nil
+}
+
+func (s *service) startAggregator(
+	transport *roundTripperFunc,
+	serverConfig *genericapiserver.RecommendedConfig,
+	server *genericapiserver.GenericAPIServer,
+) (*genericapiserver.GenericAPIServer, error) {
+	aggregatorConfig, aggregatorInformers, err := aggregator.CreateAggregatorConfig(s.options, *serverConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	aggregatorServer, err := aggregator.CreateAggregatorServer(aggregatorConfig, aggregatorInformers, server)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// setup the loopback transport for the aggregator server and signal that it's ready
@@ -326,29 +387,16 @@ func (s *service) start(ctx context.Context) error {
 	}
 	close(transport.ready)
 
-	// only write kubeconfig in dev mode
-	if o.ExtraOptions.DevMode {
-		if err := ensureKubeConfig(aggregatorServer.GenericAPIServer.LoopbackClientConfig, o.StorageOptions.DataPath); err != nil {
-			return err
-		}
-	}
-
-	// used by the proxy wrapper registered in ProvideService
-	s.handler = aggregatorServer.GenericAPIServer.Handler
-	// used by local clients to make requests to the server
-	s.restConfig = aggregatorServer.GenericAPIServer.LoopbackClientConfig
-	// stash the options for later use
-	s.options = o
-
 	prepared, err := aggregatorServer.PrepareRun()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	go func() {
 		s.stoppedCh <- prepared.Run(s.stopCh)
 	}()
-	return nil
+
+	return aggregatorServer.GenericAPIServer, nil
 }
 
 func (s *service) GetDirectRestConfig(c *contextmodel.ReqContext) *clientrest.Config {
