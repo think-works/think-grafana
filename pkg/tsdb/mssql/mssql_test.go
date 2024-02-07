@@ -16,7 +16,6 @@ import (
 
 	"github.com/grafana/grafana/pkg/infra/db"
 	"github.com/grafana/grafana/pkg/services/sqlstore/sqlutil"
-	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/tsdb/sqleng"
 )
 
@@ -51,7 +50,7 @@ func TestMSSQL(t *testing.T) {
 
 	db := initMSSQLTestDB(t, config.DSInfo.JsonData)
 
-	endpoint, err := sqleng.NewQueryDataHandler(setting.NewCfg(), db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
+	endpoint, err := sqleng.NewQueryDataHandler("", db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
 	require.NoError(t, err)
 
 	fromStart := time.Date(2018, 3, 15, 13, 0, 0, 0, time.UTC).In(time.Local)
@@ -804,7 +803,7 @@ func TestMSSQL(t *testing.T) {
 					MetricColumnTypes: []string{"VARCHAR", "CHAR", "NVARCHAR", "NCHAR"},
 					RowLimit:          1000000,
 				}
-				endpoint, err := sqleng.NewQueryDataHandler(setting.NewCfg(), db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
+				endpoint, err := sqleng.NewQueryDataHandler("", db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
 				require.NoError(t, err)
 				query := &backend.QueryDataRequest{
 					Queries: []backend.DataQuery{
@@ -1208,7 +1207,7 @@ func TestMSSQL(t *testing.T) {
 				RowLimit:          1,
 			}
 
-			handler, err := sqleng.NewQueryDataHandler(setting.NewCfg(), db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
+			handler, err := sqleng.NewQueryDataHandler("", db, config, &queryResultTransformer, newMssqlMacroEngine(), logger)
 			require.NoError(t, err)
 
 			t.Run("When doing a table query that returns 2 rows should limit the result to 1 row", func(t *testing.T) {
