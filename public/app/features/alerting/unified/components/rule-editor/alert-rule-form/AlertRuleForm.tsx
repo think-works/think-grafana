@@ -109,8 +109,8 @@ export const AlertRuleForm = ({ existing, prefill }: Props) => {
       notifyApp.error(conditionErrorMsg);
       return;
     }
-    // if this rule is using manual routing, we save this option in local storage
-    if (values.manualRouting) {
+    // when creating a new rule, if this rule is using manual routing, we save this option in local storage
+    if (!existing && values.manualRouting) {
       localStorage.setItem(MANUAL_ROUTING_KEY, 'true');
     } else {
       localStorage.setItem(MANUAL_ROUTING_KEY, 'false');
