@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 # 自定义的 dockerfile 语法 https://docs.docker.com/build/dockerfile/frontend/
 
-ARG BASE_IMAGE=alpine:3.18.3
-ARG JS_IMAGE=node:18-alpine3.18
+ARG BASE_IMAGE=alpine:3.19.1
+ARG JS_IMAGE=node:18-alpine
 ARG JS_PLATFORM=linux/amd64
-ARG GO_IMAGE=golang:1.21.5-alpine3.18
+ARG GO_IMAGE=golang:1.21.10-alpine
 
 ARG GO_SRC=go-builder
 ARG JS_SRC=js-builder
