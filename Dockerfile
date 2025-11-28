@@ -56,6 +56,7 @@ WORKDIR /tmp/grafana
 
 COPY go.* ./
 COPY .bingo .bingo
+COPY pkg/build/go.mod pkg/build/go.sum pkg/build/
 
 # 更换 go 源
 RUN go env -w GO111MODULE=on
