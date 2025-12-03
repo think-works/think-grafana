@@ -1,3 +1,5 @@
+import { isEmbedded } from "../../../../think/packages/detection";
+
 import { mousetrap } from './mousetrap';
 
 export interface KeyBindingItem {
@@ -16,6 +18,10 @@ export class KeybindingSet {
   private _binds: KeyBindingItem[] = [];
 
   addBinding(item: KeyBindingItem) {
+    if (isEmbedded()) {
+      return;
+    }
+
     mousetrap.bind(
       item.key,
       (evt) => {

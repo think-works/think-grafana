@@ -38,6 +38,7 @@ COPY public public
 COPY LICENSE ./
 COPY conf/defaults.ini ./conf/defaults.ini
 COPY e2e e2e
+COPY think think
 
 #
 # Set the node env according to defaults or argument passed

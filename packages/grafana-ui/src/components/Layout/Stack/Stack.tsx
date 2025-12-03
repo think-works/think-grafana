@@ -8,7 +8,7 @@ import { AlignItems, Direction, FlexProps, JustifyContent, Wrap } from '../types
 import { ResponsiveProp, getResponsiveStyle } from '../utils/responsiveness';
 import { getSizeStyles, SizeProps } from '../utils/styles';
 
-interface StackProps extends FlexProps, SizeProps, Omit<React.HTMLAttributes<HTMLElement>, 'className' | 'style'> {
+interface StackProps extends FlexProps, SizeProps, React.HTMLAttributes<HTMLElement> {
   gap?: ResponsiveProp<ThemeSpacingTokens>;
   rowGap?: ResponsiveProp<ThemeSpacingTokens>;
   columnGap?: ResponsiveProp<ThemeSpacingTokens>;
@@ -26,6 +26,8 @@ interface StackProps extends FlexProps, SizeProps, Omit<React.HTMLAttributes<HTM
  */
 export const Stack = React.forwardRef<HTMLDivElement, StackProps>((props, ref) => {
   const {
+    className,
+    style,
     gap = 1,
     rowGap,
     columnGap,
@@ -62,7 +64,7 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>((props, ref) =
   );
   const sizeStyles = useStyles2(getSizeStyles, width, minWidth, maxWidth, height, minHeight, maxHeight);
   return (
-    <div ref={ref} className={cx(styles.flex, sizeStyles)} {...rest}>
+    <div ref={ref} className={cx(styles.flex, sizeStyles, className)} style={style} {...rest}>
       {children}
     </div>
   );

@@ -19,6 +19,8 @@ import {
 import { AppNotificationSeverity } from 'app/types/appNotifications';
 import { DashboardRoutes } from 'app/types/dashboard';
 
+import { isHideTime } from '../../../../../think/packages/detection';
+import { SceneSync } from '../../../../../think/packages/scene-sync';
 import { DashboardScene } from '../scene/DashboardScene';
 
 import { getDashboardScenePageStateManager, LoadError } from './DashboardScenePageStateManager';
@@ -76,8 +78,17 @@ function PublicDashboardSceneRenderer({ model }: SceneComponentProps<DashboardSc
   const conf = useGetPublicDashboardConfig();
 
   useEffect(() => {
-    return refreshPicker.activate();
-  }, [refreshPicker]);
+    const refreshPickerDeactivation = refreshPicker.activate();
+    const sceneTimeSyncDeactivation = new SceneSync({
+      timePicker,
+      refreshPicker,
+    }).activate();
+
+    return () => {
+      refreshPickerDeactivation();
+      sceneTimeSyncDeactivation();
+    };
+  }, [refreshPicker, timePicker]);
 
   useEffect(() => {
     setIsActive(true);
@@ -100,7 +111,7 @@ function PublicDashboardSceneRenderer({ model }: SceneComponentProps<DashboardSc
           <span className={styles.title}>{title}</span>
         </Stack>
         {!hideTimeControls && (
-          <Stack>
+          <Stack className={styles.timeControls}>
             <timePicker.Component model={timePicker} />
             <refreshPicker.Component model={refreshPicker} />
           </Stack>
@@ -159,6 +170,9 @@ function getStyles(theme: GrafanaTheme2) {
       flexDirection: 'column',
       overflowY: 'auto',
     }),
+    timeControls: css(isHideTime() ? {
+      display: 'none',
+    } : {}),
   };
 }
 

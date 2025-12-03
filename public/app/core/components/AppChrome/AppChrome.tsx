@@ -13,6 +13,8 @@ import store from 'app/core/store';
 import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { ScopesDashboards } from 'app/features/scopes/dashboards/ScopesDashboards';
 
+import { isEmbedded } from '../../../../../think/packages/detection';
+
 import { AppChromeMenu } from './AppChromeMenu';
 import { AppChromeService, DOCKED_LOCAL_STORAGE_KEY } from './AppChromeService';
 import {
@@ -192,7 +194,8 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       label: 'page-content',
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: headerHeight,
+      paddingTop: isEmbedded() ? 0 : headerHeight,
+      paddingBottom: isEmbedded() ? 60 : 0,
       flexGrow: 1,
       height: 'auto',
     }),
@@ -203,7 +206,9 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
     contentChromeless: css({
       paddingTop: 0,
     }),
-    dockedMegaMenu: css({
+    dockedMegaMenu: css(isEmbedded() ? {
+      display: 'none'
+    } : {
       background: theme.colors.background.primary,
       borderRight: `1px solid ${theme.colors.border.weak}`,
       display: 'none',
@@ -226,7 +231,9 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
     scopesDashboardsContainerDocked: css({
       left: MENU_WIDTH,
     }),
-    topNav: css({
+    topNav: css(isEmbedded() ? {
+      display: 'none'
+    } : {
       display: 'flex',
       position: 'fixed',
       zIndex: theme.zIndex.navbarFixed,
@@ -266,7 +273,9 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       height: '100%',
       minHeight: 0,
     }),
-    skipLink: css({
+    skipLink: css(isEmbedded() ? {
+      display: 'none'
+    } : {
       position: 'fixed',
       top: -1000,
 

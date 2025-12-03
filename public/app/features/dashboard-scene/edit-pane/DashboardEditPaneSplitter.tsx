@@ -8,6 +8,7 @@ import { useSceneObjectState } from '@grafana/scenes';
 import { ElementSelectionContext, useStyles2 } from '@grafana/ui';
 import NativeScrollbar, { DivScrollElement } from 'app/core/components/NativeScrollbar';
 
+import { isEmbedded } from '../../../../../think/packages/detection';
 import { useSnappingSplitter } from '../panel-edit/splitter/useSnappingSplitter';
 import { DashboardScene } from '../scene/DashboardScene';
 import { NavToolbarActions } from '../scene/NavToolbarActions';
@@ -186,7 +187,7 @@ function getStyles(theme: GrafanaTheme2, headerHeight: number) {
         display: 'none',
       },
     }),
-    controlsWrapperSticky: css({
+    controlsWrapperSticky: css(isEmbedded() ? {} : {
       [theme.breakpoints.up('md')]: {
         position: 'sticky',
         zIndex: theme.zIndex.activePanel,

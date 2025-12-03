@@ -7,6 +7,7 @@ import { GrafanaTheme2, LoadingState } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t } from '@grafana/i18n';
 
+import { isEmbedded } from '../../../../../think/packages/detection';
 import { useStyles2, useTheme2 } from '../../themes/ThemeContext';
 import { getFocusStyles } from '../../themes/mixins';
 import { DelayRender } from '../../utils/DelayRender';
@@ -402,7 +403,7 @@ export function PanelChrome({
 
           {headerContent}
 
-          {menu && (
+          {menu && !isEmbedded() && (
             <PanelMenu
               menu={menu}
               title={typeof title === 'string' ? title : undefined}
