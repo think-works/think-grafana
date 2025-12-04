@@ -228,7 +228,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       height: `calc(100% - ${headerHeight}px)`,
       zIndex: 1,
     }),
-    scopesDashboardsContainerDocked: css({
+    scopesDashboardsContainerDocked: css(isEmbedded() ? {} : {
       left: MENU_WIDTH,
     }),
     topNav: css(isEmbedded() ? {
@@ -242,7 +242,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       background: theme.colors.background.primary,
       flexDirection: 'column',
     }),
-    topNavMenuDocked: css({
+    topNavMenuDocked: css(isEmbedded() ? {} : {
       left: MENU_WIDTH,
     }),
     panes: css({
@@ -256,10 +256,10 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       overflow: 'hidden',
       position: 'relative',
     }),
-    pageContainerMenuDocked: css({
+    pageContainerMenuDocked: css(isEmbedded() ? {} : {
       paddingLeft: MENU_WIDTH,
     }),
-    pageContainerMenuDockedScopes: css({
+    pageContainerMenuDockedScopes: css(isEmbedded() ? {} :{
       paddingLeft: `calc(${MENU_WIDTH} * 2)`,
     }),
     pageContainer: css({
@@ -299,7 +299,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
 
 const getContentSizeStyles = (_: GrafanaTheme2, extensionSidebarWidth = 0) => {
   return {
-    contentWidth: css({
+    contentWidth: css(isEmbedded() ? {} :{
       maxWidth: `calc(100% - ${extensionSidebarWidth}px) !important`,
     }),
   };

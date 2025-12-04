@@ -1,4 +1,5 @@
 import { rangeUtil } from '@grafana/data';
+import { locationService } from '@grafana/runtime';
 import { SceneObjectBase, SceneObjectState, sceneGraph, SceneRefreshPicker, SceneTimePicker } from '@grafana/scenes';
 
 import { GrafanaMessage } from './message';
@@ -80,6 +81,9 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
         const zone = timeRange.getTimeZone();
         const range = rangeUtil.convertRawToRange({ from, to }, zone);
         timeRange.onTimeRangeChange(range);
+
+        // 强制更新 URL
+        locationService.partial({ from, to });
       }
 
       if (Object.keys(rest).length > 0) {
@@ -104,6 +108,9 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
 
       if (refresh !== undefined) {
         refreshPicker?.onIntervalChanged(refresh);
+        
+        // 强制更新 URL
+        locationService.partial({ refresh });
       }
 
       if (Object.keys(rest).length > 0) {
