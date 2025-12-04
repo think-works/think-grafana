@@ -18,13 +18,13 @@ let prevConfig: ThinkConfig;
  * 实时读取配置
  */
 const getThinkConfig = () => {
-  if (prevSearch === location.search) {
+  if (prevSearch === window.location.search) {
     return prevConfig;
   } else {
-    prevSearch = location.search;
+    prevSearch = window.location.search;
   }
 
-  const search = new URLSearchParams(location.search);
+  const search = new URLSearchParams(window.location.search);
   const params = search.get(THINK_SEARCH_KEY);
 
   if (prevParams === params) {

@@ -2,26 +2,32 @@ import { rangeUtil } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { SceneObjectBase, SceneObjectState, sceneGraph, SceneRefreshPicker, SceneTimePicker } from '@grafana/scenes';
 
-import { GrafanaMessage } from './message';
+import { GrafanaMessage, uuid4 } from './message';
 
-export interface SceneTimeSyncState extends SceneObjectState {
+export interface SceneTimeSyncState extends SceneObjectState {}
+
+export interface SceneTimeSyncOptions {
   timePicker?: SceneTimePicker;
   refreshPicker?: SceneRefreshPicker;
 }
 
 export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
-  constructor(state: Partial<SceneTimeSyncState>) {
+  private timePicker?: SceneTimePicker;
+  private refreshPicker?: SceneRefreshPicker;
+
+  constructor(state: Partial<SceneTimeSyncState>, options?: SceneTimeSyncOptions) {
     super(state);
+
+    this.timePicker = options?.timePicker;
+    this.refreshPicker = options?.refreshPicker;
 
     this.addActivationHandler(() => this._onActivate());
   }
 
   private _onActivate() {
     const timeRange = sceneGraph.getTimeRange(this);
-    const timePicker = this.state.timePicker;
-    const refreshPicker = this.state.refreshPicker;
 
-    const instanceId = `instance-${Date.now()}-${Math.random()}`;
+    const instanceId = `instance-${uuid4()}`;
     const message = new GrafanaMessage({
       targetWindow: window.parent,
     });
@@ -34,19 +40,19 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
     // 监听 TimeRange 变化
     const timeRangeSub = timeRange.subscribeToState((state) => {
       const { from, to, value, ...rest } = state;
-      message.sendMessage('grafana:event:scene:time-range:state', { from, to, value, ...rest }, true);
+      message.sendMessage('grafana:event:scene:time-range:state', { from, to, value, ...rest }, { clearPayload: true });
     });
 
     // 监听 TimePicker 变化
-    let timePickerSub = timePicker?.subscribeToState((state) => {
+    let timePickerSub = this.timePicker?.subscribeToState((state) => {
       const { hidePicker, ...rest } = state;
-      message.sendMessage('grafana:event:scene:time-picker:state', { hidePicker, ...rest }, true);
+      message.sendMessage('grafana:event:scene:time-picker:state', { hidePicker, ...rest }, { clearPayload: true });
     });
 
     // 监听 RefreshPicker 变化
-    let refreshPickerSub = refreshPicker?.subscribeToState((state) => {
+    let refreshPickerSub = this.refreshPicker?.subscribeToState((state) => {
       const { refresh, ...rest } = state;
-      message.sendMessage('grafana:event:scene:refresh-picker:state', { refresh, ...rest }, true);
+      message.sendMessage('grafana:event:scene:refresh-picker:state', { refresh, ...rest }, { clearPayload: true });
     });
 
     // #endregion
@@ -61,10 +67,10 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
     };
 
     // 监听 RefreshPicker 刷新
-    const refreshPickerOnRefresh = refreshPicker?.onRefresh;
-    if (refreshPicker && refreshPickerOnRefresh) {
-      refreshPicker.onRefresh = () => {
-        refreshPickerOnRefresh.call(refreshPicker);
+    const refreshPickerOnRefresh = this.refreshPicker?.onRefresh;
+    if (this.refreshPicker && refreshPickerOnRefresh) {
+      this.refreshPicker.onRefresh = () => {
+        refreshPickerOnRefresh.call(this.refreshPicker);
         message.sendMessage('grafana:event:scene:refresh-picker:refresh');
       };
     }
@@ -74,16 +80,13 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
     // #region 修改状态
 
     // 修改 TimeRange
-    const timeRangeHandler = (payload?: { from?: string; to?: string } & Record<string, any>) => {
+    const timeRangeHandler = (payload?: { from?: string; to?: string } & Record<string, unknown>) => {
       const { from, to, ...rest } = payload || {};
 
       if (from !== undefined && to !== undefined) {
         const zone = timeRange.getTimeZone();
         const range = rangeUtil.convertRawToRange({ from, to }, zone);
         timeRange.onTimeRangeChange(range);
-
-        // 强制更新 URL
-        locationService.partial({ from, to });
       }
 
       if (Object.keys(rest).length > 0) {
@@ -93,28 +96,25 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
     message.on('grafana:action:scene:time-range:state', timeRangeHandler);
 
     // 修改 TimePicker
-    const timePickerHandler = (payload?: Record<string, any>) => {
+    const timePickerHandler = (payload?: Record<string, unknown>) => {
       const { ...rest } = payload || {};
 
       if (Object.keys(rest).length > 0) {
-        timePicker?.setState({ ...rest });
+        this.timePicker?.setState({ ...rest });
       }
     };
     message.on('grafana:action:scene:time-picker:state', timePickerHandler);
 
     // 修改 RefreshPicker
-    const refreshPickerHandler = (payload?: { refresh?: string; autoEnabled?: boolean } & Record<string, any>) => {
+    const refreshPickerHandler = (payload?: { refresh?: string; autoEnabled?: boolean } & Record<string, unknown>) => {
       const { refresh, autoEnabled, ...rest } = payload || {};
 
       if (refresh !== undefined) {
-        refreshPicker?.onIntervalChanged(refresh);
-        
-        // 强制更新 URL
-        locationService.partial({ refresh });
+        this.refreshPicker?.onIntervalChanged(refresh);
       }
 
       if (Object.keys(rest).length > 0) {
-        refreshPicker?.setState({ ...rest });
+        this.refreshPicker?.setState({ ...rest });
       }
     };
     message.on('grafana:action:scene:refresh-picker:state', refreshPickerHandler);
@@ -131,9 +131,23 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
 
     // 触发 RefreshPicker 刷新
     const refreshPickerRefreshHandler = () => {
-      refreshPicker?.onRefresh();
+      this.refreshPicker?.onRefresh();
     };
     message.on('grafana:action:scene:refresh-picker:refresh', refreshPickerRefreshHandler);
+
+    // #endregion
+
+    // #region 修改 URL
+
+    // 修改 TimePicker 参数
+    const locationServicePartialHandler = (payload?: Record<string, unknown>) => {
+      const { ...rest } = payload || {};
+
+      if (Object.keys(rest).length > 0) {
+        locationService.partial({ ...rest });
+      }
+    };
+    message.on('grafana:action:location-service:partial', locationServicePartialHandler);
 
     // #endregion
 
@@ -145,8 +159,8 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
 
       // 恢复原始方法
       timeRange.onRefresh = timeRangeOnRefresh;
-      if (refreshPicker && refreshPickerOnRefresh) {
-        refreshPicker.onRefresh = refreshPickerOnRefresh;
+      if (this.refreshPicker && refreshPickerOnRefresh) {
+        this.refreshPicker.onRefresh = refreshPickerOnRefresh;
       }
 
       // 下线通知
@@ -158,6 +172,7 @@ export class SceneSync extends SceneObjectBase<SceneTimeSyncState> {
       message.off('grafana:action:scene:refresh-picker:state', refreshPickerHandler);
       message.off('grafana:action:scene:time-range:refresh', timeRangeRefreshHandler);
       message.off('grafana:action:scene:refresh-picker:refresh', refreshPickerRefreshHandler);
+      message.off('grafana:action:location-service:partial', locationServicePartialHandler);
 
       // 销毁实例
       message.destroy();

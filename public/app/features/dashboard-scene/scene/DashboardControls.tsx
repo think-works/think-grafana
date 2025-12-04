@@ -17,7 +17,7 @@ import {
 } from '@grafana/scenes';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 
-import { isHideTime } from '../../../../../think/packages/detection';
+import { isEmbedded, isHideTime } from '../../../../../think/packages/detection';
 import { SceneSync } from '../../../../../think/packages/scene-sync';
 import { PanelEditControls } from '../panel-edit/PanelEditControls';
 import { getDashboardSceneFor } from '../utils/utils';
@@ -90,17 +90,22 @@ export class DashboardControls extends SceneObjectBase<DashboardControlsState> {
 
     this.addActivationHandler(() => {
       let refreshPickerDeactivation: CancelActivationHandler | undefined;
-      const sceneTimeSyncDeactivation = new SceneSync({
-        timePicker: this.state.timePicker,
-        refreshPicker: this.state.refreshPicker,
-      }).activate();
+      const sceneTimeSyncDeactivation = isEmbedded()
+        ? new SceneSync(
+            {},
+            {
+              timePicker: this.state.timePicker,
+              refreshPicker: this.state.refreshPicker,
+            }
+          ).activate()
+        : undefined;
 
       if (this.state.hideTimeControls) {
         refreshPickerDeactivation = this.state.refreshPicker.activate();
       }
 
       return () => {
-        sceneTimeSyncDeactivation();
+        sceneTimeSyncDeactivation?.();
         if (refreshPickerDeactivation) {
           refreshPickerDeactivation();
         }
@@ -239,13 +244,17 @@ function getStyles(theme: GrafanaTheme2) {
       background: 'unset',
       position: 'unset',
     }),
-    timeControls: css(isHideTime() ? {
-      display: 'none',
-    } : {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: theme.spacing(1),
-    }),
+    timeControls: css(
+      isHideTime()
+        ? {
+            display: 'none',
+          }
+        : {
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: theme.spacing(1),
+          }
+    ),
     timeControlsWrap: css({
       flexWrap: 'wrap',
       marginLeft: 'auto',

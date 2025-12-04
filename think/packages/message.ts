@@ -2,11 +2,39 @@ import { isDebugger } from './detection';
 
 const appName = 'think-grafana';
 
+export const uuid4 = () => {
+  const crypto = window.crypto;
+
+  if (crypto?.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+
+  if (crypto?.getRandomValues) {
+    return template.replace(/[xy]/g, (c) => {
+      const r = crypto.getRandomValues(new Uint8Array(1))[0] & 0xf;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+  }
+
+  return template.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+};
+
+// #region Grafana 消息
+
 export type EventData = {
+  /** 消息 ID */
+  id: string;
   /** 事件类型 */
   type: string;
+  /** 确认 ID */
+  ackId?: string;
   /** 事件负载 */
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
 };
 
 export type EventHandler = (payload?: EventData['payload']) => void;
@@ -23,7 +51,7 @@ export type MessageOptions = {
 export class GrafanaMessage {
   private sourceWindow: Window = window;
   private targetWindow: Window = window;
-  private targetOrigin: string = isDebugger() ? "*" : window.location.origin;
+  private targetOrigin: string = isDebugger() ? '*' : window.location.origin;
   private handlers: Record<string, EventHandler[]> = {};
 
   constructor(options?: MessageOptions) {
@@ -43,7 +71,7 @@ export class GrafanaMessage {
   /** 接收消息 */
   private handleMessage = (event: MessageEvent<EventData>) => {
     const { origin, data } = event;
-    const { type, payload } = data || {};
+    const { ackId, type, payload } = data || {};
 
     if (isDebugger()) {
       // eslint-disable-next-line no-console
@@ -55,7 +83,16 @@ export class GrafanaMessage {
     }
 
     const list = this.handlers[type];
-    (list || []).forEach((handler) => {
+    if (!list.length) {
+      return;
+    }
+
+    // 确认消息
+    if (ackId) {
+      this.sendMessage(ackId);
+    }
+
+    list.forEach((handler) => {
       if (typeof handler === 'function') {
         handler(payload);
       }
@@ -63,15 +100,42 @@ export class GrafanaMessage {
   };
 
   /** 发送消息 */
-  public sendMessage(type: string, payload?: Record<string, any>, clearPayload?: boolean) {
+  public sendMessage(
+    type: EventData['type'],
+    payload?: EventData['payload'],
+    options?: {
+      clearPayload?: boolean;
+      callback?: (payload?: EventData['payload']) => void;
+    }
+  ) {
+    const { clearPayload, callback } = options || {};
     const cleanPayload = clearPayload && payload ? JSON.parse(JSON.stringify(payload)) : payload;
+
+    const messageId = `message-${uuid4()}`;
+    const data: EventData = {
+      id: messageId,
+      type,
+      payload: cleanPayload,
+    };
+
+    // 需要确认
+    if (callback) {
+      const ackId = `ack:${messageId}`;
+      data.ackId = ackId;
+
+      const ackHandler: EventHandler = (...rest) => {
+        this.off(ackId, ackHandler);
+        callback(...rest);
+      };
+      this.on(ackId, ackHandler);
+    }
 
     if (isDebugger()) {
       // eslint-disable-next-line no-console
-      console.debug(`[${appName}] send message`, {type, payload, cleanPayload});
+      console.debug(`[${appName}] send message`, data, options);
     }
 
-    this.targetWindow.postMessage({ type, payload: cleanPayload }, this.targetOrigin);
+    this.targetWindow.postMessage(data, this.targetOrigin);
   }
 
   /* 注册事件 */
@@ -96,3 +160,5 @@ export class GrafanaMessage {
     this.handlers[type] = list;
   }
 }
+
+// #endregion

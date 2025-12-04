@@ -19,7 +19,7 @@ import {
 import { AppNotificationSeverity } from 'app/types/appNotifications';
 import { DashboardRoutes } from 'app/types/dashboard';
 
-import { isHideTime } from '../../../../../think/packages/detection';
+import { isEmbedded, isHideTime } from '../../../../../think/packages/detection';
 import { SceneSync } from '../../../../../think/packages/scene-sync';
 import { DashboardScene } from '../scene/DashboardScene';
 
@@ -78,15 +78,20 @@ function PublicDashboardSceneRenderer({ model }: SceneComponentProps<DashboardSc
   const conf = useGetPublicDashboardConfig();
 
   useEffect(() => {
+    const sceneTimeSyncDeactivation = isEmbedded()
+      ? new SceneSync(
+          {},
+          {
+            timePicker,
+            refreshPicker,
+          }
+        ).activate()
+      : undefined;
     const refreshPickerDeactivation = refreshPicker.activate();
-    const sceneTimeSyncDeactivation = new SceneSync({
-      timePicker,
-      refreshPicker,
-    }).activate();
 
     return () => {
+      sceneTimeSyncDeactivation?.();
       refreshPickerDeactivation();
-      sceneTimeSyncDeactivation();
     };
   }, [refreshPicker, timePicker]);
 
@@ -170,9 +175,13 @@ function getStyles(theme: GrafanaTheme2) {
       flexDirection: 'column',
       overflowY: 'auto',
     }),
-    timeControls: css(isHideTime() ? {
-      display: 'none',
-    } : {}),
+    timeControls: css(
+      isHideTime()
+        ? {
+            display: 'none',
+          }
+        : {}
+    ),
   };
 }
 
