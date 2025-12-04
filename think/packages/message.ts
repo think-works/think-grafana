@@ -52,7 +52,7 @@ export class GrafanaMessage {
   private sourceWindow: Window = window;
   private targetWindow: Window = window;
   private targetOrigin: string = isDebugger() ? '*' : window.location.origin;
-  private handlers: Record<string, EventHandler[]> = {};
+  private handlers: Record<string, EventHandler[] | undefined> = {};
 
   constructor(options?: MessageOptions) {
     this.sourceWindow = options?.sourceWindow || this.sourceWindow;
@@ -83,7 +83,7 @@ export class GrafanaMessage {
     }
 
     const list = this.handlers[type];
-    if (!list.length) {
+    if (!list?.length) {
       return;
     }
 
