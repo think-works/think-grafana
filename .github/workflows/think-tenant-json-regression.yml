@@ -1,0 +1,32 @@
+name: Think tenant JSON regression
+
+on:
+  pull_request:
+    branches: [think/main-v12.3.0]
+    paths:
+      - public/app/features/templating/**
+      - scripts/tests/jsonstring-interpolation.test.cjs
+      - scripts/tests/fixtures/ob-tenant-trend.json
+      - .github/workflows/think-tenant-json-regression.yml
+
+permissions:
+  contents: read
+
+jobs:
+  tenant-json:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      CYPRESS_INSTALL_BINARY: '0'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn node --test scripts/tests/jsonstring-interpolation.test.cjs
+      - run: yarn jest --runInBand --runTestsByPath public/app/features/templating/formatVariableValue.test.ts public/app/features/templating/template_srv.test.ts
