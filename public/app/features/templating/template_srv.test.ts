@@ -840,7 +840,7 @@ describe('templateSrv', () => {
         $variables: new SceneVariableSet({
           variables: [
             new CustomVariable({ name: 'job', value: '$__all', includeAll: true, allValue: '.*' }),
-            new ConstantVariable({ name: 'tenant', value: 'a"\\$job' }),
+            new QueryVariable({ name: 'tenant', value: 'a"\\$job', query: { refId: 'A' } }),
           ],
         }),
         body: new SceneCanvasText({ text: '' }),
