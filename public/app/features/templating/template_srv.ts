@@ -15,7 +15,13 @@ import {
   TemplateSrv as BaseTemplateSrv,
   VariableInterpolation,
 } from '@grafana/runtime';
-import { sceneGraph, VariableCustomFormatterFn, SceneObject, MultiValueVariable } from '@grafana/scenes';
+import {
+  sceneGraph,
+  VariableCustomFormatterFn,
+  SceneObject,
+  MultiValueVariable,
+  VariableValueOption,
+} from '@grafana/scenes';
 import { VariableFormatID } from '@grafana/schema';
 
 import { getVariablesCompatibility } from '../dashboard-scene/utils/getVariablesCompatibility';
@@ -396,7 +402,7 @@ export class TemplateSrv implements BaseTemplateSrv {
       const variable = sceneGraph.lookupVariable(name, sceneObject);
       let value = scoped ? this.getVariableValue(scoped, fieldPath) : variable?.getValue(fieldPath);
       if (!scoped && variable instanceof MultiValueVariable && variable.hasAllValue()) {
-        value = variable.state.allValue || variable.state.options.map((option) => option.value);
+        value = variable.state.allValue || variable.state.options.map((option: VariableValueOption) => option.value);
       }
       const result = formatVariableValue(value, 'jsonstring');
       interpolations?.push({
