@@ -15,13 +15,7 @@ import {
   TemplateSrv as BaseTemplateSrv,
   VariableInterpolation,
 } from '@grafana/runtime';
-import {
-  sceneGraph,
-  VariableCustomFormatterFn,
-  SceneObject,
-  MultiValueVariable,
-  VariableValueOption,
-} from '@grafana/scenes';
+import { sceneGraph, VariableCustomFormatterFn, SceneObject } from '@grafana/scenes';
 import { VariableFormatID } from '@grafana/schema';
 
 import { getVariablesCompatibility } from '../dashboard-scene/utils/getVariablesCompatibility';
@@ -276,7 +270,7 @@ export class TemplateSrv implements BaseTemplateSrv {
     if (scopedVars && scopedVars.__sceneObject) {
       // We are using valueOf here as __sceneObject can be after scenes 5.6.0 a SafeSerializableSceneObject that overrides valueOf to return the underlying SceneObject
       const sceneObject: SceneObject = scopedVars.__sceneObject.value.valueOf();
-      return this.replaceInScene(
+      return sceneGraph.interpolate(
         sceneObject,
         target,
         scopedVars,
@@ -287,7 +281,7 @@ export class TemplateSrv implements BaseTemplateSrv {
 
     // Scenes compatability: (secondary method) is using the current active scene as the scope for evaluation.
     if (window.__grafanaSceneContext && window.__grafanaSceneContext.isActive) {
-      return this.replaceInScene(
+      return sceneGraph.interpolate(
         window.__grafanaSceneContext,
         target,
         scopedVars,
@@ -361,12 +355,7 @@ export class TemplateSrv implements BaseTemplateSrv {
       value = this.getAllValue(variable);
       text = ALL_VARIABLE_TEXT;
       // skip formatting of custom all values unless format set to text or percentencode
-      if (
-        variable.allValue &&
-        format !== VariableFormatID.Text &&
-        format !== VariableFormatID.PercentEncode &&
-        format !== 'jsonstring'
-      ) {
+      if (variable.allValue && format !== VariableFormatID.Text && format !== VariableFormatID.PercentEncode) {
         return this.replace(value);
       }
     }
@@ -379,42 +368,6 @@ export class TemplateSrv implements BaseTemplateSrv {
     }
 
     return formatVariableValue(value, format, variable, text);
-  }
-
-  private replaceInScene(
-    sceneObject: SceneObject,
-    target: string | undefined,
-    scopedVars: ScopedVars | undefined,
-    format: string | VariableCustomFormatterFn | undefined,
-    interpolations?: VariableInterpolation[]
-  ): string {
-    if (format !== 'jsonstring' && !target?.includes(':jsonstring')) {
-      return sceneGraph.interpolate(sceneObject, target, scopedVars, format, interpolations);
-    }
-
-    // Evaluate each token once so a label containing $ or backslashes is never interpolated again.
-    return this._replaceWithVariableRegex(target ?? '', format, (match, name, fieldPath, fmt) => {
-      if (fmt !== 'jsonstring') {
-        return sceneGraph.interpolate(sceneObject, match, scopedVars, fmt, interpolations);
-      }
-
-      const scoped = scopedVars?.[name];
-      const variable = sceneGraph.lookupVariable(name, sceneObject);
-      let value = scoped ? this.getVariableValue(scoped, fieldPath) : variable?.getValue(fieldPath);
-      if (!scoped && variable instanceof MultiValueVariable && variable.hasAllValue()) {
-        value = variable.state.allValue || variable.state.options.map((option: VariableValueOption) => option.value);
-      }
-      const result = formatVariableValue(value, 'jsonstring');
-      interpolations?.push({
-        match,
-        variableName: name,
-        fieldPath,
-        format: fmt,
-        value: result,
-        found: !!scoped || !!variable,
-      });
-      return result;
-    });
   }
 
   /**
