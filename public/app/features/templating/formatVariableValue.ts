@@ -9,6 +9,11 @@ export function formatVariableValue(value: any, format?: any, variable?: any, te
   // for some scopedVars there is no variable
   variable = variable || {};
 
+  // Opt-in request-body format. IDs remain strings and arrays retain selection boundaries.
+  if (format === 'jsonstring') {
+    return JSON.stringify(Array.isArray(value) ? value.map(String) : String(value ?? ''));
+  }
+
   if (value === null || value === undefined) {
     return '';
   }

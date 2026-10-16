@@ -11,6 +11,7 @@ import {
   SceneCanvasText,
   SceneVariableSet,
   TestVariable,
+  TextBoxVariable,
 } from '@grafana/scenes';
 import { VariableFormatID } from '@grafana/schema';
 import { setupDataSources } from 'app/features/alerting/unified/testSetup/datasources';
@@ -832,6 +833,54 @@ describe('templateSrv', () => {
     beforeEach(() => {
       _templateSrv = initTemplateSrv(key, []);
       interpolateMock.mockClear();
+    });
+
+    it('serializes jsonstring values in a local scene scope without reinterpolating labels', () => {
+      const scene = new EmbeddedScene({
+        $variables: new SceneVariableSet({
+          variables: [
+            new CustomVariable({ name: 'job', value: '$__all', includeAll: true, allValue: '.*' }),
+            new ConstantVariable({ name: 'tenant', value: 'a"\\$job' }),
+          ],
+        }),
+        body: new SceneCanvasText({ text: '' }),
+      });
+      const body = _templateSrv.replace('{"job":${job:jsonstring},"tenant":${tenant:jsonstring}}', {
+        __sceneObject: new SafeSerializableSceneObject(scene),
+      });
+      expect(JSON.parse(body)).toEqual({ job: '.*', tenant: 'a"\\$job' });
+    });
+
+    it('serializes jsonstring values with the active scene context', () => {
+      const previousScene = window.__grafanaSceneContext;
+      const scene = new EmbeddedScene({
+        $variables: new SceneVariableSet({
+          variables: [new CustomVariable({ name: 'job', value: '$__all', includeAll: true, allValue: '.*' })],
+        }),
+        body: new SceneCanvasText({ text: '' }),
+      });
+      window.__grafanaSceneContext = scene;
+      const deactivate = scene.activate();
+      try {
+        expect(_templateSrv.replace('${job:jsonstring}')).toBe('".*"');
+      } finally {
+        deactivate();
+        window.__grafanaSceneContext = previousScene;
+      }
+    });
+
+    it('preserves exporter identity supplied to a scene textbox through the URL', () => {
+      const exporter = new TextBoxVariable({ name: 'think_exporter_instance_id', value: '.*' });
+      exporter.updateFromUrl({ 'var-think_exporter_instance_id': 'exporter-a' });
+      const scene = new EmbeddedScene({
+        $variables: new SceneVariableSet({ variables: [exporter] }),
+        body: new SceneCanvasText({ text: '' }),
+      });
+      expect(
+        _templateSrv.replace('${think_exporter_instance_id:jsonstring}', {
+          __sceneObject: new SafeSerializableSceneObject(scene),
+        })
+      ).toBe('"exporter-a"');
     });
 
     it('should use scene interpolator when scoped var provided', () => {
