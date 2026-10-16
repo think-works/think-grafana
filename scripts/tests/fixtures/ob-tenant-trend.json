@@ -1,0 +1,17 @@
+{
+  "body": "{\"executionId\":$executionId,\"metric\":\"ob_tenant_cpu_percent\",\"startMillis\":$__from,\"endMillis\":$__to,\"filter\":{\"datasourceId\":${datasourceId:jsonstring},\"job\":${job:jsonstring},\"instance\":${instance:jsonstring},\"metrics_profile\":${metrics_profile:jsonstring},\"service_name\":${service_name:jsonstring},\"ob_cluster_id\":${ob_cluster_id:jsonstring},\"svr_ip\":${svr_ip:jsonstring},\"think_exporter_instance_id\":${think_exporter_instance_id:jsonstring},\"tenant_name\":${ob_tenant_id:jsonstring}}}",
+  "values": {
+    "executionId": "402",
+    "__from": "1792129370000",
+    "__to": "1792129724000",
+    "datasourceId": "default-datasource",
+    "job": "$__all",
+    "instance": "$__all",
+    "metrics_profile": "oceanbase-ocp-basic-v1",
+    "service_name": ["example-service"],
+    "ob_cluster_id": "1646104845",
+    "svr_ip": "$__all",
+    "think_exporter_instance_id": "exporter-a",
+    "ob_tenant_id": "tenant-a"
+  }
+}
