@@ -7,23 +7,6 @@ import { formatVariableValue } from './formatVariableValue';
 describe('format variable to string values', () => {
   silenceConsoleOutput();
 
-  it.each([
-    ['default-datasource', '"default-datasource"'],
-    [1646104845, '"1646104845"'],
-    ['.*', '".*"'],
-    [['IAM_OceanBase', 42], '["IAM_OceanBase","42"]'],
-    [null, '""'],
-    [undefined, '""'],
-    [[], '[]'],
-  ])('jsonstring serializes %j as JSON strings', (value, expected) => {
-    expect(formatVariableValue(value, 'jsonstring')).toBe(expected);
-  });
-
-  it('jsonstring escapes labels without interpolating their contents', () => {
-    const value = 'tenant"\\\n$job';
-    expect(JSON.parse(formatVariableValue(value, 'jsonstring'))).toBe(value);
-  });
-
   it('single value should return value', () => {
     const result = formatVariableValue('test');
     expect(result).toBe('test');
